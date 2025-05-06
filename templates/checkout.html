@@ -1,0 +1,163 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="lg:grid lg:grid-cols-2 lg:gap-x-12 xl:gap-x-16">
+        <!-- Cart Summary -->
+        <div class="lg:col-span-1">
+            <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
+                <h2 class="text-xl font-semibold mb-6">Order Summary</h2>
+                
+                <div class="space-y-4 mb-6">
+                    {% set total = namespace(value=0) %}
+                    {% for item in cart.get('items', []) %}
+                        {% if products.get(item.category) and products[item.category].get(item.product) %}
+                            <div class="flex justify-between">
+                                <div>
+                                    <h3 class="text-gray-900">{{ item.get('product')|replace('_', ' ')|title }}</h3>
+                                    <p class="text-gray-500">Qty: {{ item.get('quantity', 1) }}</p>
+                                </div>
+                                <div class="text-gray-900">
+                                    {% set item_total = products[item.category][item.product].price * item.quantity %}
+                                    {% set total.value = total.value + item_total %}
+                                    {{ item_total }} INR
+                                </div>
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+
+                <div class="border-t border-gray-200 pt-4 space-y-4">
+                    <div class="flex justify-between text-gray-600">
+                        <span>Subtotal</span>
+                        <span>{{ total.value }} INR</span>
+                    </div>
+                    <div class="flex justify-between text-gray-600">
+                        <span>Delivery Fee</span>
+                        <span>40 INR</span>
+                    </div>
+                    <div class="flex justify-between text-gray-600">
+                        <span>Tax (5%)</span>
+                        <span>{{ (total.value * 0.05)|round|int }} INR</span>
+                    </div>
+                    <div class="flex justify-between border-t border-gray-200 pt-4 text-lg font-bold">
+                        <span>Total</span>
+                        <span>{{ total.value + 40 + (total.value * 0.05)|round|int }} INR</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Checkout Form -->
+        <div class="lg:col-span-1">
+            <form id="checkoutForm" method="POST" class="bg-white rounded-lg shadow-lg p-6">
+                <h2 class="text-xl font-semibold mb-6">Shipping Information</h2>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label for="full_name" class="block text-sm font-medium text-gray-700">Full Name</label>
+                        <input type="text" id="full_name" name="full_name" required
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                    </div>
+
+                    <div>
+                        <label for="phone" class="block text-sm font-medium text-gray-700">Phone Number</label>
+                        <input type="tel" id="phone" name="phone" required pattern="[0-9]{10}"
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                    </div>
+
+                    <div>
+                        <label for="address_line1" class="block text-sm font-medium text-gray-700">Address Line 1</label>
+                        <input type="text" id="address_line1" name="address_line1" required
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                    </div>
+
+                    <div>
+                        <label for="address_line2" class="block text-sm font-medium text-gray-700">Address Line 2 (Optional)</label>
+                        <input type="text" id="address_line2" name="address_line2"
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label for="city" class="block text-sm font-medium text-gray-700">City</label>
+                            <input type="text" id="city" name="city" required
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                        </div>
+
+                        <div>
+                            <label for="state" class="block text-sm font-medium text-gray-700">State</label>
+                            <input type="text" id="state" name="state" required
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label for="pincode" class="block text-sm font-medium text-gray-700">PIN Code</label>
+                        <input type="text" id="pincode" name="pincode" required pattern="[0-9]{6}"
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                    </div>
+
+                    <div class="border-t border-gray-200 pt-6">
+                        <h3 class="text-lg font-medium text-gray-900 mb-4">Payment Method</h3>
+                        <div class="space-y-3">
+                            <div class="flex items-center">
+                                <input type="radio" id="cod" name="payment_method" value="cod" required
+                                    class="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                                <label for="cod" class="ml-3 block text-sm font-medium text-gray-700">
+                                    Cash on Delivery
+                                </label>
+                            </div>
+                            <div class="flex items-center">
+                                <input type="radio" id="upi" name="payment_method" value="upi" required
+                                    class="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                                <label for="upi" class="ml-3 block text-sm font-medium text-gray-700">
+                                    UPI Payment
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-8">
+                    <button type="submit"
+                        class="w-full bg-indigo-600 text-white py-3 px-4 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-colors duration-150">
+                        Place Order
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Loading Overlay -->
+<div id="loadingOverlay" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+    <div class="bg-white rounded-lg p-6 shadow-xl">
+        <div class="animate-spin rounded-full h-12 w-12 border-4 border-indigo-600 border-t-transparent mx-auto"></div>
+        <p class="mt-4 text-gray-700 font-medium">Processing your order...</p>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const form = document.getElementById('checkoutForm');
+    const loadingOverlay = document.getElementById('loadingOverlay');
+
+    form.addEventListener('submit', function(e) {
+        loadingOverlay.style.display = 'flex';
+    });
+
+    // Simple phone number validation
+    const phoneInput = document.getElementById('phone');
+    phoneInput.addEventListener('input', function(e) {
+        this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10);
+    });
+
+    // Simple pincode validation
+    const pincodeInput = document.getElementById('pincode');
+    pincodeInput.addEventListener('input', function(e) {
+        this.value = this.value.replace(/[^0-9]/g, '').slice(0, 6);
+    });
+</script>
+{% endblock %}

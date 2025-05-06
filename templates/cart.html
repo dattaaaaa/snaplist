@@ -1,0 +1,415 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="bg-white rounded-lg shadow-lg p-6 md:p-8">
+        <!-- Cart Header with Animation -->
+        <div class="flex items-center justify-between mb-8 pb-4 border-b border-gray-200">
+            <h1 class="text-2xl md:text-3xl font-bold text-gray-900 animate-fade-in">Shopping Cart</h1>
+            {% if cart and cart.get('items') %}
+                <span class="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full animate-slide-in">
+                    {{ cart.get('items')|length }} item{% if cart.get('items')|length != 1 %}s{% endif %}
+                </span>
+            {% endif %}
+        </div>
+        
+        {% if cart and cart.get('items') %}
+            <!-- Cart Items with Improved Animation and Interaction -->
+            <div class="space-y-6" id="cartItemsContainer">
+                {% for item in cart.get('items', []) %}
+                <div class="cart-item group flex flex-col md:flex-row md:items-center justify-between border rounded-lg p-4 hover:shadow-md transition-all duration-300 animate-fade-slide-in" 
+                style="animation-delay: {{ loop.index * 0.1 }}s"
+                data-product="{{ item.get('product', '') }}"
+                data-category="{{ item.get('category', '') }}">
+            <!-- Add image container here -->
+            <div class="cart-item-image-container">
+                <img src="{{ products[item.category][item.product].image }}" 
+                     alt="{{ item.product|replace('_', ' ')|title }}"
+                     class="cart-item-image">
+            </div>
+            
+            <div class="flex-1 mb-4 md:mb-0">
+                <h3 class="text-lg font-semibold text-gray-900 mb-1 group-hover:text-indigo-600 transition-colors duration-200">
+                    {{ item.get('product', '')|replace('_', ' ')|title }}
+                </h3>
+                {% if products.get(item.category) and products[item.category].get(item.product) %}
+                <div class="flex items-center space-x-2">
+                    <span class="text-gray-600 font-medium">{{ item.price }} INR</span>
+                    <span class="text-sm text-gray-500">{{ products[item.category][item.product].unit }}</span>
+                </div>
+                <div class="text-sm text-gray-500 mt-1">
+                    Category: {{ products[item.category][item.product].category|replace('_', ' ')|title }}
+                </div>
+            {% endif %}
+    </div>
+                    
+                    <div class="flex items-center space-x-6">
+
+                        <!-- Quantity Controls with Improved Interaction -->
+                            <div class="flex items-center">
+                                <button 
+                                    onclick="updateQuantity('{{ item.category }}', '{{ item.product }}', {{ item.quantity - 1 }})"
+                                    class="quantity-btn flex items-center justify-center w-8 h-8 rounded-l-md border border-r-0 {% if item.quantity <= 1 %}opacity-50{% endif %} hover:bg-gray-50 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1"
+                                >
+                                    <i class="fas fa-minus text-gray-600"></i>
+                                </button>
+                                <div class="w-16 h-8 flex items-center justify-center border-t border-b bg-white">
+                                    <span class="text-gray-700 font-medium">{{ item.quantity }}</span>
+                                </div>
+                                <button 
+                                    onclick="updateQuantity('{{ item.category }}', '{{ item.product }}', {{ item.quantity + 1 }})"
+                                    class="quantity-btn flex items-center justify-center w-8 h-8 rounded-r-md border border-l-0 hover:bg-gray-50 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1"
+                                >
+                                    <i class="fas fa-plus text-gray-600"></i>
+                                </button>
+                            </div>
+                        
+                        <!-- Item Total with Animation -->
+                        {% if products.get(item.get('product')) %}
+                            <div class="hidden md:block text-right animate-fade-in">
+                                <div class="text-lg font-semibold text-gray-900">
+                                    {{ item.subtotal }} INR
+                                </div>
+                            </div>
+                        {% endif %}
+
+                        <!-- Remove Button with Improved Interaction -->
+                        <button 
+                            onclick="removeItem('{{ item.category }}', '{{ item.product }}')"
+                            class="group-hover:text-red-600 transition-all duration-200 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-1 rounded-full p-2"
+                            title="Remove item"
+                        >
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+                {% endfor %}
+
+                <!-- Cart Summary with Improved Visual Hierarchy -->
+                <div class="mt-12 lg:mt-16 animate-fade-slide-up" style="animation-delay: 0.3s">
+                    <div class="bg-gray-50 rounded-lg p-6 space-y-4 shadow-sm">
+                        
+                        <div class="flex justify-between text-gray-600">
+                            <span>Subtotal</span>
+                            <span class="font-medium">{{ total }} INR</span>
+                        </div>
+                        <div class="flex justify-between text-gray-600">
+                            <span>Delivery Fee</span>
+                            <span class="font-medium">40 INR</span>
+                        </div>
+                        <div class="flex justify-between text-gray-600">
+                            <span>Tax (5%)</span>
+                            <span class="font-medium">{{ (total * 0.05)|round|int }} INR</span>
+                        </div>
+                        <div class="flex justify-between border-t border-gray-200 pt-4 text-lg font-bold text-gray-900">
+                            <span>Total</span>
+                            <span>{{ total + 40 + (total * 0.05)|round|int }} INR</span>
+                        </div>
+                    </div>
+
+                    <div class="mt-8 space-y-4">
+                        <a 
+                            href="{{ url_for('checkout') }}" 
+                            class="block w-full bg-indigo-600 text-white py-4 px-6 rounded-lg font-semibold hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-all duration-200 text-center hover:scale-[1.02] active:scale-[0.98]"
+                        >
+                            Proceed to Checkout
+                        </a>
+                        <a 
+                            href="{{ url_for('home') }}" 
+                            class="block w-full text-center py-4 px-6 rounded-lg border border-gray-300 text-gray-700 font-medium hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
+                        >
+                            Continue Shopping
+                        </a>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <!-- Empty Cart State with Improved Animation -->
+            <div class="text-center py-16 animate-fade-in">
+                <div class="w-24 h-24 mx-auto mb-6 bg-gray-100 rounded-full flex items-center justify-center animate-bounce">
+                    <i class="fas fa-shopping-cart text-gray-400 text-3xl"></i>
+                </div>
+                <h3 class="text-xl font-semibold text-gray-900 mb-2">Your cart is empty</h3>
+                <p class="text-gray-600 mb-8 max-w-md mx-auto">Looks like you haven't added any items to your cart yet. Start exploring our products!</p>
+                <a 
+                    href="{{ url_for('home') }}" 
+                    class="inline-flex items-center px-6 py-3 border border-transparent rounded-lg shadow-sm text-base font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
+                >
+                    <i class="fas fa-arrow-left mr-2"></i>
+                    Browse Products
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Improved Loading Overlay -->
+<div id="loadingOverlay" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+    <div class="bg-white rounded-lg p-8 shadow-xl animate-fade-in">
+        <div class="animate-spin rounded-full h-12 w-12 border-4 border-indigo-600 border-t-transparent mx-auto"></div>
+        <p class="mt-4 text-gray-700 font-medium text-center">Updating your cart...</p>
+    </div>
+</div>
+
+<!-- Enhanced Notification Container -->
+<div id="notificationContainer" class="fixed bottom-4 right-4 z-50 space-y-4"></div>
+
+<!-- Add custom styles -->
+<style>
+    @keyframes fade-in {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+    
+    @keyframes slide-in {
+        from { transform: translateX(20px); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+    
+    @keyframes fade-slide-in {
+        from { transform: translateY(20px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+    }
+    
+    @keyframes fade-slide-up {
+        from { transform: translateY(40px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+    }
+    
+    .animate-fade-in { animation: fade-in 0.5s ease-out; }
+    .animate-slide-in { animation: slide-in 0.5s ease-out; }
+    .animate-fade-slide-in { animation: fade-slide-in 0.5s ease-out both; }
+    .animate-fade-slide-up { animation: fade-slide-up 0.5s ease-out both; }
+    .cart-item-image-container {
+        width: 96px; /* Fixed width */
+        height: 96px; /* Fixed height */
+        flex-shrink: 0; /* Prevent shrinking */
+        margin-right: 1rem; /* Spacing between image and text */
+        background-color: #f3f4f6; /* Light gray background */
+        border-radius: 0.5rem; /* Rounded corners */
+        overflow: hidden; /* Ensure image stays within container */
+    }
+
+    .cart-item-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover; /* Maintain aspect ratio */
+    }
+
+    @keyframes fade-in {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const loadingOverlay = document.getElementById('loadingOverlay');
+    const notificationContainer = document.getElementById('notificationContainer');
+    const cartItemsContainer = document.getElementById('cartItemsContainer');
+
+    function showLoading() {
+        loadingOverlay.style.display = 'flex';
+    }
+
+    function hideLoading() {
+        loadingOverlay.style.display = 'none';
+    }
+
+    function removeItem(category, product) {
+    updateQuantity(category, product, 0);
+}
+
+function updateQuantity(category, product, quantity) {
+    // If quantity is 1 and we're decreasing, remove the item
+    if (quantity <= 0) {
+        showConfirmation(
+            'Remove Item',
+            'Are you sure you want to remove this item from your cart?',
+            () => performUpdate(category, product, 0)
+        );
+        return;
+    }
+    
+    performUpdate(category, product, quantity);
+}
+
+function performUpdate(category, product, quantity) {
+    showLoading();
+    fetch('/cart/add', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ 
+            category: category,
+            product: product,
+            quantity: quantity
+        })
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.json();
+    })
+    .then(data => {
+        hideLoading();
+        if (data.error) {
+            showNotification(data.error, 'error');
+        } else {
+            showNotification('Cart updated successfully', 'success');
+            setTimeout(() => location.reload(), 500);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        hideLoading();
+        showNotification('An error occurred while updating the cart', 'error');
+    });
+}
+
+// Add this helper function to get product category
+function getProductCategory(product) {
+    // Add data attribute to store category in HTML
+    const itemElement = document.querySelector(`[data-product="${product}"]`);
+    return itemElement ? itemElement.dataset.category : '';
+}
+
+    function showConfirmation(title, message, onConfirm) {
+        const confirmationDialog = document.createElement('div');
+        confirmationDialog.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 animate-fade-in';
+        confirmationDialog.innerHTML = `
+            <div class="bg-white rounded-lg p-6 max-w-sm mx-4 animate-fade-slide-up">
+                <h3 class="text-lg font-semibold text-gray-900 mb-2">${title}</h3>
+                <p class="text-gray-600 mb-6">${message}</p>
+                <div class="flex justify-end space-x-4">
+                    <button onclick="this.closest('.fixed').remove()" 
+                        class="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-md transition-colors duration-200">
+                        Cancel
+                    </button>
+                    <button onclick="onConfirmClick(this)" 
+                        class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors duration-200">
+                        Remove
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(confirmationDialog);
+        
+        // Store the confirmation callback
+        confirmationDialog.querySelector('button:last-child').onclick = () => {
+            onConfirm();
+            confirmationDialog.remove();
+        };
+    }
+
+    function showNotification(message, type) {
+        const notification = document.createElement('div');
+        notification.className = `notification transform translate-x-full opacity-0 transition-all duration-300 max-w-md bg-white rounded-lg shadow-lg border-l-4 ${type === 'success' ? 'border-green-500' : 'border-red-500'}`;
+        notification.innerHTML = `
+            <div class="p-4">
+                <div class="flex items-start">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-${type === 'success' ? 'check' : 'exclamation'}-circle text-${type === 'success' ? 'green' : 'red'}-500 text-lg"></i>
+                    </div>
+                    <div class="ml-3">
+                        <p class="text-sm font-medium text-gray-900">${message}</p>
+                    </div>
+                    <button onclick="this.closest('.notification').remove()" 
+                        class="ml-auto flex-shrink-0 text-gray-400 hover:text-gray-500 transition-colors duration-200">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        notificationContainer.appendChild(notification);
+        
+        // Trigger entrance animation
+        requestAnimationFrame(() => {
+            notification.classList.remove('translate-x-full', 'opacity-0');
+        });
+
+        // Add hover effect
+        notification.addEventListener('mouseenter', () => {
+            notification.style.transform = 'scale(1.02)';
+            notification.style.boxShadow = '0 10px 15px -3px rgba(0, 0, 0, 0.1)';
+        });
+
+        notification.addEventListener('mouseleave', () => {
+            notification.style.transform = 'scale(1)';
+            notification.style.boxShadow = '';
+        });
+
+        // Auto-remove after 5 seconds
+        const timeout = setTimeout(() => {
+            notification.classList.add('translate-x-full', 'opacity-0');
+            setTimeout(() => notification.remove(), 300);
+        }, 5000);
+
+        // Clear timeout if user manually closes notification
+        notification.querySelector('button').addEventListener('click', () => {
+            clearTimeout(timeout);
+        });
+    }
+
+    // Add smooth scroll to top after cart updates
+    function scrollToTop() {
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+        });
+    }
+
+    // Add touch swipe support for mobile
+    let touchStartX = 0;
+    let touchEndX = 0;
+
+    document.querySelectorAll('.cart-item').forEach(item => {
+        item.addEventListener('touchstart', e => {
+            touchStartX = e.changedTouches[0].screenX;
+        });
+
+        item.addEventListener('touchend', e => {
+            touchEndX = e.changedTouches[0].screenX;
+            handleSwipe(item);
+        });
+    });
+
+    function handleSwipe(item) {
+        const swipeThreshold = 100;
+        const swipeLength = touchEndX - touchStartX;
+
+        if (Math.abs(swipeLength) > swipeThreshold) {
+            if (swipeLength < 0) { // Swipe left
+                const productId = item.querySelector('.quantity-btn').getAttribute('onclick').split("'")[1];
+                removeItem(productId);
+            }
+        }
+    }
+
+    // Add keyboard navigation support
+    document.querySelectorAll('.quantity-btn').forEach(btn => {
+        btn.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                btn.click();
+            }
+        });
+    });
+
+    // Add cart item hover animations
+    document.querySelectorAll('.cart-item').forEach(item => {
+        item.addEventListener('mouseenter', () => {
+            item.style.transform = 'translateY(-2px)';
+        });
+
+        item.addEventListener('mouseleave', () => {
+            item.style.transform = 'translateY(0)';
+        });
+    });
+</script>
+{% endblock %}

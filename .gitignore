@@ -1,0 +1,11 @@
+myenv/
+Fruits and Vegetables.v5-fruitnvegetablever3.yolov8/
+train/
+test/
+valid/
+__pycache__/
+*.pyc
+.DS_Store
+.env 
+312.py
+backupapp.py

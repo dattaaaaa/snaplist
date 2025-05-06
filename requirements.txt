@@ -1,0 +1,9 @@
+flask
+streamlit
+torch
+yolov5
+opencv-python
+numpy
+pillow
+requests
+wtforms 
