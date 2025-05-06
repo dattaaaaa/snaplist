@@ -2,7 +2,6 @@
 
 SnapList is an innovative web application that uses computer vision to identify fruits, vegetables, and retail products from images. It offers a complete shopping experience with user authentication, product catalog, shopping cart functionality, and order management.
 
-![SnapList App](https://via.placeholder.com/800x400?text=SnapList+App)
 
 ## ✨ Features
 
